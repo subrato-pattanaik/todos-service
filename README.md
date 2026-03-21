@@ -1,4 +1,15 @@
-# Lets understand the architecture of this code
+A backend server for todos API for learning purpose.
+
+## Packages and framework
+
+- uv as package manager
+- Python 3.14
+- FastAPI: go-to package for building APIs
+- SQLModel: go-to package for building APIs with SQL database
+- Hypercorn: go-to package for running FastAPI applications
+- Pydantic models: go-to package for data validation
+
+## Lets understand the architecture of this code
 
 ### MakeFile
 
