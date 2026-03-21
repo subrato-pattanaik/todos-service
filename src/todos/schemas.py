@@ -3,18 +3,24 @@ Pydantic schemas for the todos module.
 It is for defining the structure of data that is sent to and from the API.
 """
 
-from pydantic import BaseModel
+from sqlmodel import SQLModel
 
 
-class TodoCreate(BaseModel):
-    """Schema for creating a new todo item."""
+class TodoBase(SQLModel):
+    """Shared properties for all Todo structures."""
 
     title: str
-    description: str
+    description: str | None = None
     completed: bool = False
 
 
-class TodoUpdate(BaseModel):
+class TodoCreate(TodoBase):
+    """Schema for creating a new todo item."""
+
+    pass
+
+
+class TodoUpdate(SQLModel):
     """Schema for updating an existing todo item - all fields optional."""
 
     title: str | None = None
@@ -22,10 +28,7 @@ class TodoUpdate(BaseModel):
     completed: bool | None = None
 
 
-class TodoResponse(BaseModel):
+class TodoResponse(TodoBase):
     """Schema returned to the client."""
 
     id: str
-    title: str
-    description: str
-    completed: bool

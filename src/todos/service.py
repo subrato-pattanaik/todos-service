@@ -1,94 +1,75 @@
 """Business logic for the todos module."""
 
-import sqlite3
-import uuid
+from collections.abc import Sequence
+from sqlmodel import Session, select
 
 from src.todos.exceptions import TodoNotFound, TodoUpdateEmpty
-from src.todos.schemas import TodoCreate, TodoResponse, TodoUpdate
-from src.todos.utils import row_to_response
+from src.todos.schemas import TodoCreate, TodoUpdate
+from src.todos.models import Todo
 
 
-def create_todo(conn: sqlite3.Connection, todo: TodoCreate) -> TodoResponse:
-    """Create a new todo item and return it."""
-    todo_id = str(uuid.uuid4())
-    cursor = conn.cursor()
-    cursor.execute(
-        "INSERT INTO todos (id, title, description, completed) VALUES (?, ?, ?, ?)",
-        (todo_id, todo.title, todo.description, int(todo.completed)),
-    )
-    conn.commit()
-    return TodoResponse(
-        id=todo_id,
-        title=todo.title,
-        description=todo.description,
-        completed=todo.completed,
-    )
+def create_todo(db: Session, todo: TodoCreate) -> Todo:
+    # SQLModel automatically creates the ORM object straight from the schema
+    db_todo = Todo.model_validate(todo)
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)
+    return db_todo
 
 
-def get_all_todos(conn: sqlite3.Connection) -> list[TodoResponse]:
-    """Return every todo item in the database."""
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM todos")
-    rows = cursor.fetchall()
-    return [row_to_response(row) for row in rows]
+def get_all_todos(db: Session) -> Sequence[Todo]:
+    # In SQLModel, queries are executed via db.exec(select(...))
+    return db.exec(select(Todo)).all()
 
 
-def get_todo_by_id(conn: sqlite3.Connection, todo_id: str) -> TodoResponse:
-    """Return a single todo by ID. Raises TodoNotFound if missing."""
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM todos WHERE id = ?", (todo_id,))
-    row = cursor.fetchone()
-    if not row:
+def get_todo_by_id(db: Session, todo_id: str) -> Todo:
+    db_todo = db.get(Todo, todo_id)
+    if not db_todo:
         raise TodoNotFound(todo_id)
-    return row_to_response(row)
+    return db_todo
 
 
-def update_todo(
-    conn: sqlite3.Connection, todo_id: str, todo: TodoUpdate
-) -> TodoResponse:
-    """Update an existing todo item. Raises TodoNotFound / TodoUpdateEmpty."""
-    cursor = conn.cursor()
-
-    # Verify existence
-    cursor.execute("SELECT * FROM todos WHERE id = ?", (todo_id,))
-    if not cursor.fetchone():
+def replace_todo(db: Session, todo_id: str, todo_replace: TodoCreate) -> Todo:
+    db_todo = db.get(Todo, todo_id)
+    if not db_todo:
         raise TodoNotFound(todo_id)
 
-    # Build dynamic update
-    update_fields: list[str] = []
-    values: list[str | int] = []
+    # For a true PUT, we want ALL fields mapped, even if they explicitly set them to null/defaults
+    update_data = todo_replace.model_dump()
 
-    if todo.title is not None:
-        update_fields.append("title = ?")
-        values.append(todo.title)
-    if todo.description is not None:
-        update_fields.append("description = ?")
-        values.append(todo.description)
-    if todo.completed is not None:
-        update_fields.append("completed = ?")
-        values.append(int(todo.completed))
+    # Overwrite every single field on the DB object
+    for key, value in update_data.items():
+        setattr(db_todo, key, value)
 
-    if not update_fields:
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)
+    return db_todo
+
+
+def update_todo(db: Session, todo_id: str, todo_update: TodoUpdate) -> Todo:
+    db_todo = db.get(Todo, todo_id)
+    if not db_todo:
+        raise TodoNotFound(todo_id)
+
+    update_data = todo_update.model_dump(exclude_unset=True)
+    if not update_data:
         raise TodoUpdateEmpty()
 
-    values.append(todo_id)
-    query = f"UPDATE todos SET {', '.join(update_fields)} WHERE id = ?"
-    cursor.execute(query, values)
-    conn.commit()
+    for key, value in update_data.items():
+        setattr(db_todo, key, value)
 
-    # Return updated todo
-    cursor.execute("SELECT * FROM todos WHERE id = ?", (todo_id,))
-    return row_to_response(cursor.fetchone())
+    db.add(db_todo)
+    db.commit()
+    db.refresh(db_todo)  # refresh to get new incremented id
+    return db_todo
 
 
-def delete_todo(conn: sqlite3.Connection, todo_id: str) -> dict[str, str]:
-    """Delete a todo by ID. Raises TodoNotFound if missing."""
-    cursor = conn.cursor()
-
-    cursor.execute("SELECT * FROM todos WHERE id = ?", (todo_id,))
-    if not cursor.fetchone():
+def delete_todo(db: Session, todo_id: str) -> dict[str, str]:
+    db_todo = db.get(Todo, todo_id)
+    if not db_todo:
         raise TodoNotFound(todo_id)
 
-    cursor.execute("DELETE FROM todos WHERE id = ?", (todo_id,))
-    conn.commit()
+    db.delete(db_todo)
+    db.commit()
     return {"message": "Todo deleted successfully"}

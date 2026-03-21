@@ -1,32 +1,17 @@
 """Database connection and initialization utilities."""
 
-import sqlite3
-from contextlib import contextmanager
-
+from sqlmodel import SQLModel, create_engine
 from src.config import DATABASE_URL
 
+# sqlite is not thread safe, so we need to pass this flag to avoid the server from crashing
+# if multiple threads try to access the database
+connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 
-@contextmanager
-def get_db_connection():
-    """Context manager that yields a sqlite3 connection and ensures it is closed."""
-    conn = sqlite3.connect(DATABASE_URL)
-    conn.row_factory = sqlite3.Row  # return rows as dict-like objects
-    try:
-        yield conn
-    finally:
-        conn.close()
+engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 
 def init_db() -> None:
     """Initialize the database - create tables if they don't exist."""
-    with get_db_connection() as conn:
-        cursor = conn.cursor()
-        cursor.execute("""
-            CREATE TABLE IF NOT EXISTS todos (
-                id TEXT PRIMARY KEY,
-                title TEXT NOT NULL,
-                description TEXT,
-                completed BOOLEAN DEFAULT 0
-            )
-        """)
-        conn.commit()
+    from src.todos import models  # noqa: F401
+
+    SQLModel.metadata.create_all(engine)

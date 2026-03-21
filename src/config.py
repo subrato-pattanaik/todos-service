@@ -4,7 +4,7 @@ import os
 
 
 # Database
-DATABASE_URL: str = os.getenv("DATABASE_URL", "todos.db")
+DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///todos.db")
 
 # Application
 APP_TITLE: str = "Todos Service"

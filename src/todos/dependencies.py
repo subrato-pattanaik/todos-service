@@ -1,16 +1,12 @@
 """Router dependencies for the todos module."""
 
-import sqlite3
 from collections.abc import Generator
+from sqlmodel import Session
+from src.database import engine
 
-from src.config import DATABASE_URL
 
-
-def get_db() -> Generator[sqlite3.Connection, None, None]:
+def get_db() -> Generator[Session, None, None]:
     """FastAPI dependency that provides a database connection per request."""
-    conn = sqlite3.connect(DATABASE_URL)
-    conn.row_factory = sqlite3.Row
-    try:
-        yield conn
-    finally:
-        conn.close()
+    # SQLModel allows you to just instantiate Session with the engine directly!
+    with Session(engine) as session:
+        yield session

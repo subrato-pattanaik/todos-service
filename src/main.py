@@ -15,17 +15,21 @@ from src.todos.router import router as todos_router
 
 def create_app() -> FastAPI:
     """FastAPI instance"""
+
     # Startup/shutdown events
     @asynccontextmanager
     async def lifespan(app: FastAPI):
-        # Everything before the yield runs on startup
-        init_db()
-        yield
+        print("Server is starting up...")
+        init_db()  # Initialize the database on startup
+        yield  # Pauses the execution of the function and the server starts running.
+        # The server is now running and waiting for HTTP requests
         # Everything after the yield runs on shutdown (nothing to do here)
+        # It is mainly used for closing database connections, cleaning up resources, etc when shutting down.
+        print("Server is shutting down...")
 
     app = FastAPI(
         title=APP_TITLE,
-        version=APP_VERSION, 
+        version=APP_VERSION,
         description=APP_DESCRIPTION,
         lifespan=lifespan,
     )

@@ -1,13 +1,16 @@
 """
 Router in Fastapi is used to group related endpoints together.
 
-API router for the todos module - all /todos endpoints."""
+API router for the todos module - all /todos endpoints.
+"""
 
-import sqlite3
+from collections.abc import Sequence
 
 from fastapi import APIRouter, Depends
+from sqlmodel import Session
 
 from src.todos.dependencies import get_db
+from src.todos.models import Todo
 from src.todos.schemas import TodoCreate, TodoResponse, TodoUpdate
 from src.todos import service
 
@@ -15,27 +18,32 @@ router = APIRouter(prefix="/todos", tags=["todos"])
 
 
 @router.post("/", response_model=TodoResponse)
-def create_todo(todo: TodoCreate, conn: sqlite3.Connection = Depends(get_db)):
-    return service.create_todo(conn, todo)
+def create_todo(todo: TodoCreate, db: Session = Depends(get_db)) -> Todo:
+    return service.create_todo(db, todo)
 
 
 @router.get("/", response_model=list[TodoResponse])
-def get_all_todos(conn: sqlite3.Connection = Depends(get_db)):
-    return service.get_all_todos(conn)
+def get_all_todos(db: Session = Depends(get_db)) -> Sequence[Todo]:
+    return service.get_all_todos(db)
 
 
 @router.get("/{todo_id}", response_model=TodoResponse)
-def get_todo(todo_id: str, conn: sqlite3.Connection = Depends(get_db)):
-    return service.get_todo_by_id(conn, todo_id)
+def get_todo(todo_id: str, db: Session = Depends(get_db)) -> Todo:
+    return service.get_todo_by_id(db, todo_id)
 
 
 @router.put("/{todo_id}", response_model=TodoResponse)
-def update_todo(
-    todo_id: str, todo: TodoUpdate, conn: sqlite3.Connection = Depends(get_db)
-):
-    return service.update_todo(conn, todo_id, todo)
+def replace_todo(todo_id: str, todo: TodoCreate, db: Session = Depends(get_db)) -> Todo:
+    # Strict full replacement. Forces client to send the whole object.
+    return service.replace_todo(db, todo_id, todo)
+
+
+@router.patch("/{todo_id}", response_model=TodoResponse)
+def update_todo(todo_id: str, todo: TodoUpdate, db: Session = Depends(get_db)) -> Todo:
+    # Partial update. Client can omit fields without them being overridden to null.
+    return service.update_todo(db, todo_id, todo)
 
 
 @router.delete("/{todo_id}")
-def delete_todo(todo_id: str, conn: sqlite3.Connection = Depends(get_db)):
-    return service.delete_todo(conn, todo_id)
+def delete_todo(todo_id: str, db: Session = Depends(get_db)) -> dict[str, str]:
+    return service.delete_todo(db, todo_id)

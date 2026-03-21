@@ -1,4 +1,6 @@
-"""Todo-specific exceptions."""
+"""
+Todo-specific exceptions.
+"""
 
 from src.exceptions import AppException
 
