@@ -9,6 +9,7 @@ dependencies = [
     "hypercorn>=0.18.0",
     "pydantic>=2.12.5",
     "sqlmodel>=0.0.37",
+    "structlog>=25.5.0",
 ]
 
 [dependency-groups]
