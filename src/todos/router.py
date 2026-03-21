@@ -34,13 +34,11 @@ def get_todo(todo_id: str, db: Session = Depends(get_db)) -> Todo:
 
 @router.put("/{todo_id}", response_model=TodoResponse)
 def replace_todo(todo_id: str, todo: TodoCreate, db: Session = Depends(get_db)) -> Todo:
-    # Strict full replacement. Forces client to send the whole object.
     return service.replace_todo(db, todo_id, todo)
 
 
 @router.patch("/{todo_id}", response_model=TodoResponse)
 def update_todo(todo_id: str, todo: TodoUpdate, db: Session = Depends(get_db)) -> Todo:
-    # Partial update. Client can omit fields without them being overridden to null.
     return service.update_todo(db, todo_id, todo)
 
 

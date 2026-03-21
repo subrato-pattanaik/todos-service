@@ -20,3 +20,35 @@
 - SQLModel is ORM which is built on top of SQLAlchemy and Pydantic, simplifies the communication between the business logic and the database. Instead of writing SQL queries, we can use sql model methods and objects to interact with the database.
 - In this file we define the engine which is the entry point to the database.
 - We also define the init_db function which is responsible for creating the database tables.
+
+### Exceptions
+
+- We have a global exception handler in main.py which is responsible for handling the exceptions.
+- Each service can define its own exceptions in the exceptions.py file. This exception class is then used by the service to raise exceptions.
+- Service exceptions will inherit from the base exception class defined in the src/exceptions.py file.
+
+## How to run this application
+
+1. Clone the repo
+
+```bash
+git clone <repo-url>
+```
+
+2. Cd into the directory
+
+```bash
+cd todos-service
+```
+
+3. Install deps
+
+```bash
+uv sync
+```
+
+4. Run the application
+
+```bash
+make dev
+```

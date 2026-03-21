@@ -9,7 +9,6 @@ from src.todos.models import Todo
 
 
 def create_todo(db: Session, todo: TodoCreate) -> Todo:
-    # SQLModel automatically creates the ORM object straight from the schema
     db_todo = Todo.model_validate(todo)
     db.add(db_todo)
     db.commit()
@@ -18,7 +17,6 @@ def create_todo(db: Session, todo: TodoCreate) -> Todo:
 
 
 def get_all_todos(db: Session) -> Sequence[Todo]:
-    # In SQLModel, queries are executed via db.exec(select(...))
     return db.exec(select(Todo)).all()
 
 
