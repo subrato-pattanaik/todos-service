@@ -46,7 +46,7 @@ def create_app() -> FastAPI:
         start_time = time.perf_counter()
         response = await call_next(request)
         process_time = (time.perf_counter() - start_time) * 1000
-        
+
         # Log request details in a structured format (perfect for analytics)
         logger.info(
             "request_processed",

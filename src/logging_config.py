@@ -8,7 +8,7 @@ def configure_logging():
     Configure structlog for better structured logging.
     This works by wrapping standard Python logging.
     """
-    
+
     # 1. Standard Python Logging configuration (used for internal/library logs)
     logging.basicConfig(
         format="%(message)s",
@@ -35,13 +35,16 @@ def configure_logging():
             structlog.processors.format_exc_info,
             # Render the final output as JSON (for analytics/production)
             # or as a pretty string (for development/debugging)
-            structlog.dev.ConsoleRenderer() if sys.stdout.isatty() else structlog.processors.JSONRenderer(),
+            structlog.dev.ConsoleRenderer()
+            if sys.stdout.isatty()
+            else structlog.processors.JSONRenderer(),
         ],
         context_class=dict,
         logger_factory=structlog.stdlib.LoggerFactory(),
         wrapper_class=structlog.stdlib.BoundLogger,
         cache_logger_on_first_use=True,
     )
+
 
 def get_logger(name: str):
     """Utility to get a logger."""
