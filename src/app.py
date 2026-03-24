@@ -1,6 +1,6 @@
 """
- Main FastAPI application setup with structured logging and lifecycle management.
- Keeping this separate from main.py allows for better organization and easier testing.
+Main FastAPI application setup with structured logging and lifecycle management.
+Keeping this separate from main.py allows for better organization and easier testing.
 """
 
 import time
