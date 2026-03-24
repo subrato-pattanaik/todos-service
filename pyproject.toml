@@ -10,6 +10,7 @@ dependencies = [
     "hypercorn>=0.18.0",
     "pydantic>=2.12.5",
     "sqlmodel>=0.0.37",
+    "starlette-admin>=0.16.0",
     "structlog>=25.5.0",
 ]
 
