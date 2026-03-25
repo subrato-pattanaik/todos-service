@@ -32,3 +32,4 @@ class TodoResponse(TodoBase):
     """Schema returned to the client."""
 
     id: str
+    note_id: str | None = None

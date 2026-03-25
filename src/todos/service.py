@@ -6,10 +6,21 @@ from sqlmodel import Session, select
 from src.todos.exceptions import TodoNotFound, TodoUpdateEmpty
 from src.todos.schemas import TodoCreate, TodoUpdate
 from src.todos.models import Todo
+from src.notes.models import Note
 
 
 def create_todo(db: Session, todo: TodoCreate) -> Todo:
     db_todo = Todo.model_validate(todo)
+
+    # Automatically create an empty note for this todo
+    new_note = Note(title=f"Note for {db_todo.title}", content="")
+    db.add(new_note)
+    db.commit()
+    db.refresh(new_note)
+
+    # Link the note to the todo
+    db_todo.note_id = new_note.id
+
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)

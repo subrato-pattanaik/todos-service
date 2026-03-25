@@ -12,6 +12,7 @@ engine = create_engine(DATABASE_URL, connect_args=connect_args)
 
 def init_db() -> None:
     """Initialize the database - create tables if they don't exist."""
-    from src.todos import models  # noqa: F401
+    from src.todos import models as todos_models  # noqa: F401
+    from src.notes import models as notes_models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)

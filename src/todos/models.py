@@ -15,3 +15,4 @@ class Todo(TodoBase, table=True):
     id: str | None = Field(
         default_factory=lambda: str(uuid.uuid4()), primary_key=True, index=True
     )
+    note_id: str | None = Field(default=None, foreign_key="notes.id")

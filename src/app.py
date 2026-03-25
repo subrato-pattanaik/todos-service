@@ -9,11 +9,12 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from logging_config import configure_logging, get_logger
-from config import APP_TITLE, APP_VERSION, APP_DESCRIPTION
-from database import init_db
-from exceptions import AppException
-from todos.router import router as todos_router
+from src.logging_config import configure_logging, get_logger
+from src.config import APP_TITLE, APP_VERSION, APP_DESCRIPTION
+from src.database import init_db
+from src.exceptions import AppException
+from src.todos.router import router as todos_router
+from src.notes.router import router as notes_router
 
 
 configure_logging()
@@ -67,5 +68,5 @@ def create_app() -> FastAPI:
 
     # List of Routers
     main_server_app.include_router(todos_router)
-    # app.include.router(notes_router)
+    main_server_app.include_router(notes_router)
     return main_server_app

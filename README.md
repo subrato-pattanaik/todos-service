@@ -63,3 +63,31 @@ uv sync
 ```bash
 make dev
 ```
+
+## Database essentials
+
+### Migrate a revision
+
+1. Run the following command to create a migration version:
+
+```bash
+uv run alembic revision --autogenerate -m "<migration-message>"
+```
+
+2. Run the following command to apply the migration to the database:
+
+```bash
+uv run alembic upgrade head
+```
+
+### Undo a revision
+
+To completely undo a revision, it's a two-step process:
+
+1. Rollback the Database: First, you tell Alembic to revert the changes applied to your actual database tables by going down one revision:
+
+```bash
+uv run alembic downgrade -1
+```
+
+2. Delete the File: Then, you just delete the generated python migration file from the alembic/versions/ directory so Alembic forgets it ever existed.
